@@ -53,6 +53,9 @@ function dockerStart() {
     docker-compose up &
     # load in browser
     bot "OK, the app is booting up, we need to wait just a bit before trying to load it..."
+    bot "If the app doesn't work, you can debug it by running the following:"
+    echo "docker exec -i -t \$(docker ps | grep $APP_NAME_LOCAL | awk '{print \$1;}') bash"
+
     # for i in $(seq $APP_BOOT_TIME 1);do
     #   bot "$i...";
     # sleep 1;
