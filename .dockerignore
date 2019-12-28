@@ -1,0 +1,10 @@
+.DS_Store
+.dockerignore
+.gitignore
+.git
+docs
+dev
+dev.config.sh
+docker-compose.yml
+Dockerfile
+README.md
