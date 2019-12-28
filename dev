@@ -142,7 +142,7 @@ case "$1" in
         ;;
     update)
         bot "updating the dev toolkit"
-        curl -o dev.latest
+        curl -o dev.latest https://raw.githubusercontent.com/asanchezr/dockerize/master/dev
         ok "fetched latest"
         oldversion=$(grep "^# dockerize:" dev | sed 's/[^0-9.]//g');
         newversion=$(grep "^# dockerize:" dev.latest | sed 's/[^0-9.]//g');
