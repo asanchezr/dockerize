@@ -86,7 +86,7 @@ main() {
   echo
 
   # check_prefix "${PREFIX}"
-  confirm "Install Docker DEV scripts ${GREEN}${RESOLVED}${NO_COLOR} to ${BOLD}${GREEN}${PREFIX}${NO_COLOR}?"
+  confirm "Install Docker DEV scripts ${GREEN}${VERSION}${NO_COLOR} to ${BOLD}${GREEN}${PREFIX}${NO_COLOR}?"
 
   info "Installing, please wait…"
 
