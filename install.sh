@@ -3,7 +3,7 @@
 #
 # For newest version:
 #
-#   $ curl -sL install-node.now.sh | sh
+#   $ curl -sL https://raw.githubusercontent.com/asanchezr/dockerize/master/install.sh | bash
 #
 # Patches welcome!
 # https://github.com/asanchezr/dockerize/
