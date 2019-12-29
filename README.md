@@ -8,20 +8,26 @@ This is a sample repo that uses Docker to automate dev setup and create consiste
 
 # Developer Getting Started
 
-This application is built using Docker, which creates a Production equivalent environment on your system. It will mount the git repo app directory into the docker container so you can still work on your native OS but run the app in a sandbox.
 
-Download and run the setup:
+Simple one-liner shell script that installs the developer toolkit:
 
 ```sh
-git clone INSERT_YOUR_REPO_URL
-cd YOUR_REPO
+curl -sL https://raw.githubusercontent.com/asanchezr/dockerize/master/install.sh | bash
+```
+This application is built using Docker, which creates a Production equivalent environment on your system. It will mount the git repo app directory into the docker container so you can still work on your native OS but run the app in a sandbox.
+
+```sh
 ./dev init
 # this will make sure docker is installed and then will launch a docker quickstart shell.
 # once you see the new shell prompt, run
 ./dev start
 ```
 
-When init completes, it will automatically launch a browser pointing to the running app.
+Create `install-dev` as an alias!
+
+```bash
+alias install-dev="curl -sL https://raw.githubusercontent.com/asanchezr/dockerize/master/install.sh | bash"
+```
 
 ### Start and stop the live running app
 If for some reason you need to stop/start the app, you can do so like this:
