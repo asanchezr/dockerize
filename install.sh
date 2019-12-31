@@ -70,8 +70,8 @@ function main() {
   for file in "${dotfiles[@]}"
   do
     action "installing .$file"
-    download_file ".$file"
-    if [[ $? != 0 ]]; then
+    rc=$(download_file ".$file")
+    if [[ "$rc" != "0" ]]; then
       echo; warn ".$file already present (ignoring)"
     else
       ok
@@ -85,8 +85,8 @@ function main() {
   for dev_script in "${dev_scripts[@]}"
   do
     action "installing $dev_script"
-    download_file "$dev_script"
-    if [[ $? != 0 ]]; then
+    rc=$(download_file "$dev_script")
+    if [[ "$rc" != "0" ]]; then
       echo; warn "$dev_script already present (ignoring)"
     else
       ok
