@@ -2,7 +2,7 @@
 
 ###########################################
 # This is the project's developer toolkit #
-# dockerize: 1.0.2                        #
+# dockerize: 1.0.3                        #
 ###########################################
 
 
@@ -94,7 +94,7 @@ case "$1" in
           docker ps -a | grep $APP_NAME_LOCAL | col 1 | xargs docker rm -f
         fi
         docker images | grep $APP_NAME_LOCAL > /dev/null 2>&1
-        if [ $? == 0 ]; then
+        if [[ $? == 0 ]]; then
           docker rmi -f $APP_NAME_LOCAL
         fi
         ok
@@ -131,7 +131,7 @@ case "$1" in
         ;;
     shell)
         instance=$(docker ps | grep $APP_NAME_LOCAL | col 1)
-        if [ -z "$instance" ]; then
+        if [[ -z "$instance" ]]; then
           docker run --rm=true -i -t $APP_NAME_LOCAL bash
         else
           docker exec -i -t $instance bash
@@ -154,7 +154,7 @@ case "$1" in
         oldversion=$(grep "^# dockerize:" dev | sed 's/[^0-9.]//g');
         newversion=$(grep "^# dockerize:" dev.latest | sed 's/[^0-9.]//g');
 
-        if [ "$oldversion" != "$newversion" ]; then
+        if [[ "$oldversion" != "$newversion" ]]; then
           bot "Update found! old: $oldversion -> new: $newversion"
           cp dev.latest dev
         fi
