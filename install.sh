@@ -1,4 +1,5 @@
 #!/bin/bash
+#
 # `install.sh` is a simple one-liner shell script to install this developer toolkit
 #
 # For newest version:
@@ -6,8 +7,9 @@
 #   $ curl -sL https://raw.githubusercontent.com/asanchezr/dockerize/master/install.sh | bash
 #
 # Patches welcome!
-# https://github.com/asanchezr/dockerize/
+# https://github.com/asanchezr/dockerize
 # Alejandro Sanchez <emailforasr@gmail.com>
+#
 set -euo pipefail
 
 BOLD="$(tput bold 2>/dev/null || echo '')"
@@ -21,7 +23,7 @@ MAGENTA="$(tput setaf 5 2>/dev/null || echo '')"
 CYAN="$(tput setaf 6 2>/dev/null || echo '')"
 NO_COLOR="$(tput sgr0 2>/dev/null || echo '')"
 
-main() {
+function main() {
   # defaults
   if [ -z "${VERSION-}" ]; then
     VERSION=latest
@@ -31,9 +33,9 @@ main() {
     PLATFORM="$(detect_platform)"
   fi
 
-  if [ -z "${PREFIX-}" ]; then
-    # PREFIX=/usr/local
-    PREFIX=$(pwd)
+  if [ -z "${DEST-}" ]; then
+    # DEST=/usr/local
+    DEST=$(pwd)
   fi
 
   if [ -z "${ARCH-}" ]; then
@@ -44,34 +46,9 @@ main() {
     BASE_URL="https://raw.githubusercontent.com/asanchezr/dockerize/master/"
   fi
 
-  # parse argv variables
-  # while [ "$#" -gt 0 ]; do
-  #   case "$1" in
-  #     -v|--version) VERSION="$2"; shift 2;;
-  #     -p|--platform) PLATFORM="$2"; shift 2;;
-  #     -P|--prefix) PREFIX="$2"; shift 2;;
-  #     -a|--arch) ARCH="$2"; shift 2;;
-  #     -b|--base-url) BASE_URL="$2"; shift 2;;
-
-  #     -V|--verbose) VERBOSE=1; shift 1;;
-  #     -f|-y|--force|--yes) FORCE=1; shift 1;;
-
-  #     -v=*|--version=*) VERSION="${1#*=}"; shift 1;;
-  #     -p=*|--platform=*) PLATFORM="${1#*=}"; shift 1;;
-  #     -P=*|--prefix=*) PREFIX="${1#*=}"; shift 1;;
-  #     -a=*|--arch=*) ARCH="${1#*=}"; shift 1;;
-  #     -b=*|--base-url=*) BASE_URL="${1#*=}"; shift 1;;
-  #     -V=*|--verbose=*) VERBOSE="${1#*=}"; shift 1;;
-  #     -f=*|-y=*|--force=*|--yes=*) FORCE="${1#*=}"; shift 1;;
-
-  #     -*) error "Unknown option: $1"; exit 1;;
-  #     *) VERSION="$1"; shift 1;;
-  #   esac
-  # done
-
   printf "  ${UNDERLINE}Configuration${NO_COLOR}\n"
   info "${BOLD}Version${NO_COLOR}:  ${GREEN}${VERSION}${NO_COLOR}"
-  info "${BOLD}Prefix${NO_COLOR}:   ${GREEN}${PREFIX}${NO_COLOR}"
+  info "${BOLD}Destination${NO_COLOR}:   ${GREEN}${DEST}${NO_COLOR}"
   info "${BOLD}Platform${NO_COLOR}: ${GREEN}${PLATFORM}${NO_COLOR}"
   info "${BOLD}Arch${NO_COLOR}:     ${GREEN}${ARCH}${NO_COLOR}"
 
@@ -85,46 +62,73 @@ main() {
 
   echo
 
-  # check_prefix "${PREFIX}"
-  confirm "Install Docker DEV scripts ${GREEN}${VERSION}${NO_COLOR} to ${BOLD}${GREEN}${PREFIX}${NO_COLOR}?"
+  # check_dest "${DEST}"
+  confirm "Install Docker DEV scripts ${GREEN}${VERSION}${NO_COLOR} to ${BOLD}${GREEN}${DEST}${NO_COLOR}?"
 
-  info "Installing, please wait…"
-
-  dotfiles=( dockerignore gitignore editorconfig )
+  bot "installing dotfiles..."
+  dotfiles=( dockerignore gitignore )
   for file in "${dotfiles[@]}"
   do
-    info ".$file"
-    ensureCopy ".$file"
+    action "installing .$file"
+    download_file ".$file"
+    if [[ $? != 0 ]]; then
+      echo; warn ".$file already present (ignoring)"
+    else
+      ok
+    fi
+    ensure_exists ".$file"
+    ok
   done
 
+  bot "installing docker developer scripts..."
   dev_scripts=( dev dev.config )
   for dev_script in "${dev_scripts[@]}"
   do
-    info "$dev_script"
-    ensureCopy "$dev_script"
-    chmod +x "$PREFIX/$dev_script"
+    action "installing $dev_script"
+    download_file "$dev_script"
+    if [[ $? != 0 ]]; then
+      echo; warn "$dev_script already present (ignoring)"
+    else
+      ok
+    fi
+    ensure_exists "$dev_script"
+    chmod +x "$DEST/$dev_script"
+    ok
   done
 
-  complete "Done!"
+  # Done!
+  complete "docker-dev toolkit has been installed into ${DEST}"
+  echo
+  echo "To update docker-dev, install it again."
+  echo
+  echo "For more info visit:"
+  echo "https://github.com/asanchezr/dockerize"
+  echo
 }
 
-info() {
+function info() {
   printf "${BOLD}${GREY}>${NO_COLOR} $@\n"
 }
-
-warn() {
+function warn() {
   printf "${YELLOW}! $@${NO_COLOR}\n"
 }
-
-error() {
+function error() {
   printf "${RED}x $@${NO_COLOR}\n" >&2
 }
-
-complete() {
-  printf "${GREEN}✓${NO_COLOR} $@\n"
+function complete() {
+  printf "${GREEN}√${NO_COLOR} $@\n"
+}
+function bot() {
+  echo; echo -e "${GREEN}\[._.]/${NO_COLOR} - "$1
+}
+function action() {
+  echo -en $1"..."
+}
+function ok() {
+  echo -e "${GREEN}[ok]${NO_COLOR} "$1
 }
 
-fetch() {
+function fetch() {
   local command
   if hash curl 2>/dev/null; then
     set +e
@@ -151,14 +155,24 @@ fetch() {
   fi
 }
 
-ensureCopy() {
-  if [[ ! -e "$PREFIX/$1" ]]; then
+# download file, unless already present
+function download_file() {
+  if [[ ! -e "$DEST/$1" ]]; then
     {
-      fetch "${BASE_URL}$1" > $PREFIX/$1
+      fetch "${BASE_URL}$1" > $DEST/$1
     } &> /dev/null
-    complete "Success"
+    return 0
   else
-    warn "Already present $1"
+    return 1
+  fi
+}
+
+function ensure_exists() {
+  if [ ! -f "${DEST}/$1" ]; then
+    echo
+    error "Oops! Cannot copy '$1' to ${DEST}, installation failed."
+    echo "Try to rerun with sudo or specify a custom directory."
+    exit 1
   fi
 }
 
@@ -167,7 +181,7 @@ ensureCopy() {
 #   - darwin
 #   - linux
 #   - linux_musl (Alpine)
-detect_platform() {
+function detect_platform() {
   local platform="$(uname -s | tr '[:upper:]' '[:lower:]')"
 
   # check for MUSL
@@ -190,7 +204,7 @@ detect_platform() {
 #   - x86 (i386)
 #   - armv6l (Raspbian on Pi 1/Zero)
 #   - armv7l (Raspbian on Pi 2/3)
-detect_arch() {
+function detect_arch() {
   local arch="$(uname -m | tr '[:upper:]' '[:lower:]')"
 
   if echo "${arch}" | grep -i arm >/dev/null; then
@@ -212,7 +226,7 @@ detect_arch() {
   fi
 }
 
-confirm() {
+function confirm() {
   if [ -z "${FORCE-}" ]; then
     printf "${MAGENTA}?${NO_COLOR} $@ ${BOLD}[yN]${NO_COLOR} "
     set +e
@@ -230,7 +244,7 @@ confirm() {
   fi
 }
 
-check_prefix() {
+function check_dest() {
   local bin="$1/bin"
 
   # https://stackoverflow.com/a/11655875
@@ -244,7 +258,7 @@ check_prefix() {
   )
 
   if [ "${good}" != "1" ]; then
-    warn "Prefix bin directory ${bin} is not in your \$PATH"
+    warn "Destination directory ${bin} is not in your \$PATH"
   fi
 }
 

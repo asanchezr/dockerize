@@ -2,7 +2,7 @@
 
 ###########################################
 # This is the project's developer toolkit #
-# dockerize: 1.0.1                        #
+# dockerize: 1.0.2                        #
 ###########################################
 
 
@@ -31,16 +31,20 @@ function bot() {
   echo; echo -e "$COL_GREEN\[._.]/$COL_RESET - "$1
 }
 function running() {
-  echo; echo -en " ⇒ "$1"..."
+  echo; echo -en " -> "$1"..."
 }
 function action() {
-  echo -e "$COL_YELLOW[action]$COL_RESET"; echo -en " ⇒ "$1"..."
+  echo -e "$COL_YELLOW[action]$COL_RESET"; echo -en " -> "$1"..."
 }
 function warn() {
   echo -e "$COL_YELLOW[warning]$COL_RESET "$1
 }
 function error() {
   echo -e "$COL_RED[error]$COL_RESET "$1
+}
+
+function col {
+  awk -v col=$1 '{print $col}'
 }
 
 ###
@@ -84,10 +88,10 @@ function ensureDocker() {
 
 case "$1" in
     clean)
-        # purges the docker images relating to this app
+        running "purging the docker images relating to this app"
         docker ps -a | grep $APP_NAME_LOCAL
         if [[ $? == 0 ]]; then
-          docker rm -f $(docker ps -a | grep $APP_NAME_LOCAL | awk '{print $1;}')
+          docker ps -a | grep $APP_NAME_LOCAL | col 1 | xargs docker rm -f
         fi
         docker images | grep $APP_NAME_LOCAL > /dev/null 2>&1
         if [ $? == 0 ]; then
@@ -97,10 +101,10 @@ case "$1" in
         ;;
     free)
         running "removing all stopped containers"
-        docker rm $(docker ps -a -q) > /dev/null 2>&1
+        docker ps --filter status=exited -q | xargs docker rm --volumes > /dev/null 2>&1
         ok
         running "removing all untagged images (cruft)"
-        docker rmi $(docker images -q --filter "dangling=true") > /dev/null 2>&1
+        docker images --filter dangling=true -q | xargs docker rmi -f > /dev/null 2>&1
         ok
         ;;
     init)
@@ -126,7 +130,7 @@ case "$1" in
         dockerStart
         ;;
     shell)
-        instance=$(docker ps | grep $APP_NAME_LOCAL | awk '{print $1;}')
+        instance=$(docker ps | grep $APP_NAME_LOCAL | col 1)
         if [ -z "$instance" ]; then
           docker run --rm=true -i -t $APP_NAME_LOCAL bash
         else
