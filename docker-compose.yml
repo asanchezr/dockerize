@@ -1,0 +1,17 @@
+version: "3"
+
+services:
+  web:
+    restart: always
+    build: .
+    volumes:
+      - ./app/src/:/usr/app/src/
+      - frontend-node-cache:/usr/app/node_modules
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+
+volumes:
+  frontend-node-cache:
+
