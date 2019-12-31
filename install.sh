@@ -161,14 +161,14 @@ function download_file() {
     {
       fetch "${BASE_URL}$1" > $DEST/$1
     } &> /dev/null
-    return 0
+    echo 0
   else
-    return 1
+    echo 1
   fi
 }
 
 function ensure_exists() {
-  if [ ! -f "${DEST}/$1" ]; then
+  if [[ ! -f "${DEST}/$1" ]]; then
     echo
     error "Oops! Cannot copy '$1' to ${DEST}, installation failed."
     echo "Try to rerun with sudo or specify a custom directory."
@@ -185,7 +185,7 @@ function detect_platform() {
   local platform="$(uname -s | tr '[:upper:]' '[:lower:]')"
 
   # check for MUSL
-  if [ "${platform}" = "linux" ]; then
+  if [[ "${platform}" = "linux" ]]; then
     if ldd /bin/sh | grep -i musl >/dev/null; then
       platform=linux_musl
     fi
@@ -211,14 +211,14 @@ function detect_arch() {
     # ARM is fine
     echo "${arch}"
   else
-    if [ "${arch}" = "i386" ]; then
+    if [[ "${arch}" = "i386" ]]; then
       arch=x86
-    elif [ "${arch}" = "x86_64" ]; then
+    elif [[ "${arch}" = "x86_64" ]]; then
       arch=x64
     fi
 
     # `uname -m` in some cases mis-reports 32-bit OS as 64-bit, so double check
-    if [ "${arch}" = "x64" ] && [ "$(getconf LONG_BIT)" -eq 32 ]; then
+    if [[ "${arch}" = "x64" ]] && [[ "$(getconf LONG_BIT)" -eq 32 ]]; then
       arch=x86
     fi
 
@@ -237,7 +237,7 @@ function confirm() {
       error "Error reading from prompt (please re-run with the \`--yes\` option)"
       exit 1
     fi
-    if [ "$yn" != "y" ] && [ "$yn" != "yes" ]; then
+    if [[ "$yn" != "y" ]] && [[ "$yn" != "yes" ]]; then
       error "Aborting (please answer \"yes\" to continue)"
       exit 1
     fi
@@ -250,14 +250,14 @@ function check_dest() {
   # https://stackoverflow.com/a/11655875
   local good=$( IFS=:
     for path in $PATH; do
-      if [ "${path}" = "${bin}" ]; then
+      if [[ "${path}" = "${bin}" ]]; then
         echo 1
         break
       fi
     done
   )
 
-  if [ "${good}" != "1" ]; then
+  if [[ "${good}" != "1" ]]; then
     warn "Destination directory ${bin} is not in your \$PATH"
   fi
 }
