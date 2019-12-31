@@ -69,40 +69,39 @@ function main() {
   dotfiles=( dockerignore gitignore )
   for file in "${dotfiles[@]}"
   do
-    action "installing .$file"
+    action "downloading .$file"
     rc=$(download_file ".$file")
     if [[ "$rc" != "0" ]]; then
-      echo; warn ".$file already present (ignoring)"
+      warn ".$file already present (skipping)"
     else
       ok
     fi
     ensure_exists ".$file"
-    ok
   done
 
   bot "installing docker developer scripts..."
   dev_scripts=( dev dev.config )
   for dev_script in "${dev_scripts[@]}"
   do
-    action "installing $dev_script"
+    action "downloading $dev_script"
     rc=$(download_file "$dev_script")
     if [[ "$rc" != "0" ]]; then
-      echo; warn "$dev_script already present (ignoring)"
+      warn "$dev_script already present (skipping)"
     else
       ok
     fi
     ensure_exists "$dev_script"
     chmod +x "$DEST/$dev_script"
-    ok
   done
 
   # Done!
-  complete "docker-dev toolkit has been installed into ${DEST}"
+  echo
+  complete "Docker DEV toolkit has been installed into ${GREEN}${DEST}${NO_COLOR}"
   echo
   echo "To update docker-dev, install it again."
   echo
   echo "For more info visit:"
-  echo "https://github.com/asanchezr/dockerize"
+  echo -e "${CYAN}https://github.com/asanchezr/dockerize${NO_COLOR}"
   echo
 }
 
@@ -110,7 +109,7 @@ function info() {
   printf "${BOLD}${GREY}>${NO_COLOR} $@\n"
 }
 function warn() {
-  printf "${YELLOW}! $@${NO_COLOR}\n"
+  printf "${YELLOW}[warning] $@${NO_COLOR}\n"
 }
 function error() {
   printf "${RED}x $@${NO_COLOR}\n" >&2
@@ -119,13 +118,13 @@ function complete() {
   printf "${GREEN}√${NO_COLOR} $@\n"
 }
 function bot() {
-  echo; echo -e "${GREEN}\[._.]/${NO_COLOR} - "$1
+  echo; echo -e "${GREEN}\[._.]/${NO_COLOR} - $@"
 }
 function action() {
-  echo -en $1"..."
+  echo -en "$@..."
 }
 function ok() {
-  echo -e "${GREEN}[ok]${NO_COLOR} "$1
+  echo -e "${GREEN}[ok]${NO_COLOR} $@"
 }
 
 function fetch() {
